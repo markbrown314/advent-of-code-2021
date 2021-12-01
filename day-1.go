@@ -21,22 +21,13 @@ func convArrStringtoInt(strArray []string) []int {
 	return intArray
 }
 
-func tallyIncrease(intArray []int) int {
-	prev := 0
-	increased := 0
-
-	for i := 0; i < len(intArray); i++ {
-		cur := intArray[i]
-		if prev == 0 {
-			prev = cur
-			continue
-		}
-		if cur > prev {
+func tallyIncrease(intArray []int) (increased int) {
+	for i := 1; i < len(intArray); i++ {
+		if intArray[i] > intArray[i-1] {
 			increased++
 		}
-		prev = cur
 	}
-	return increased
+	return
 }
 
 func sumSlidingWindow(windowSize int, intArray []int) []int {
