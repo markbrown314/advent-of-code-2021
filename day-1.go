@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// convert array of string of ints to an array of ints
 func convArrStringtoInt(strArray []string) []int {
 	intArray := make([]int, 0, 64)
 	for i := 0; i < len(strArray); i++ {
@@ -17,92 +18,43 @@ func convArrStringtoInt(strArray []string) []int {
 		}
 		intArray = append(intArray, intInput)
 	}
-
 	return intArray
 }
 
-func part1(depthInput []int) {
+func tallyIncrease(intArray []int) int {
 	prev := 0
 	increased := 0
 
-	for i := 0; i < len(depthInput); i++ {
-
-		depth := depthInput[i]
-
+	for i := 0; i < len(intArray); i++ {
+		cur := intArray[i]
 		if prev == 0 {
-			fmt.Printf("%v (N/A - no previous measurement)\n", depth)
-			prev = depth
+			prev = cur
 			continue
 		}
-
-		fmt.Print(depth, " ")
-
-		if depth == prev {
-			fmt.Print("(no change)")
-		}
-
-		if depth > prev {
-			fmt.Print("(increased)")
+		if cur > prev {
 			increased++
-			prev = depth
 		}
-
-		if depth < prev {
-			fmt.Print("(decreased)")
-			prev = depth
-		}
-
-		fmt.Println()
+		prev = cur
 	}
-
-	fmt.Printf("depth has increased %v times", increased)
+	return increased
 }
 
-func part2(depthInput []int) {
+func sumSlidingWindow(windowSize int, intArray []int) []int {
 	base := 0
-	prev := 0
-	increased := 0
+	sumArray := make([]int, 0, 64)
 
-	for i := 0; i <= len(depthInput); i++ {
-
-		if i-base < 3 {
+	for i := 0; i <= len(intArray); i++ {
+		if i-base < windowSize {
 			continue
 		}
-
 		sum := 0
 		for j := base; j < i; j++ {
-			sum += depthInput[j]
+			sum += intArray[j]
 		}
-
+		sumArray = append(sumArray, sum)
 		base++
-
-		if prev == 0 {
-			fmt.Printf("%v (N/A - no previous sum)\n", sum)
-			prev = sum
-			continue
-		}
-
-		fmt.Print(sum, " ")
-
-		if sum == prev {
-			fmt.Print("(no change)")
-		}
-
-		if sum > prev {
-			fmt.Print("(increased)")
-			increased++
-			prev = sum
-		}
-
-		if sum < prev {
-			fmt.Print("(decreased)")
-			prev = sum
-		}
-
-		fmt.Println()
 	}
-
-	fmt.Printf("depth has increased %v times", increased)
+	return sumArray
 }
 
 func main() {
@@ -112,10 +64,11 @@ func main() {
 		log.Fatalf("unable to read file: %v", err)
 	}
 
-	sliceInput := strings.Split(string(input), "\n")
+	// part 1
+	depthInput := convArrStringtoInt(strings.Split(string(input), "\n"))
+	fmt.Printf("Part 1: depth has increased %v times\n", tallyIncrease(depthInput))
 
-	depthInput := convArrStringtoInt(sliceInput)
-
-	part1(depthInput)
-	part2(depthInput)
+	// part 2
+	sumArray := sumSlidingWindow(3, depthInput)
+	fmt.Printf("Part 2: depth has increased %v times\n", tallyIncrease(sumArray))
 }
