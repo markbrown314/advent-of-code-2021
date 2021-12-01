@@ -21,10 +21,10 @@ func convArrStringtoInt(strArray []string) []int {
 	return intArray
 }
 
-func tallyIncrease(intArray []int) (increased int) {
-	for i := 1; i < len(intArray); i++ {
-		if intArray[i] > intArray[i-1] {
-			increased++
+func tallyIncrease(intArray []int) (count int) {
+	for i, element := range intArray[1:] {
+		if element > intArray[i] {
+			count++
 		}
 	}
 	return
