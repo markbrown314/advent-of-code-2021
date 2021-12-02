@@ -11,10 +11,10 @@ import (
 // convert array of string of ints to an array of ints
 func convArrStringtoInt(strArray []string) []int {
 	intArray := make([]int, 0, 64)
-	for i := 0; i < len(strArray); i++ {
-		intInput, err := strconv.Atoi(strArray[i])
+	for _, element := range strArray {
+		intInput, err := strconv.Atoi(element)
 		if err != nil {
-			log.Fatalf("data conversion error for %v (%v)", strArray[i], err)
+			log.Fatalf("data conversion error for %v (%v)", element, err)
 		}
 		intArray = append(intArray, intInput)
 	}
