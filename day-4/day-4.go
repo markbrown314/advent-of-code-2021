@@ -57,33 +57,6 @@ func parseInputFile(fileName string) (bingoPicks []int, bingoBoard [][][]int, ma
 	return
 }
 
-func calculateScore(board [][]int) (score int) {
-
-	return
-}
-
-func checkBingoBoardDiagonal1(matchMatrix [][]bool) bool {
-	// check diagonal #1
-	for x := 0; x < MatrixDimension; x++ {
-		if !matchMatrix[x][x] {
-			return false
-		}
-	}
-	fmt.Println("checkBingoBoardDiagonal1 win")
-	return true
-}
-
-func checkBingoBoardDiagonal2(matchMatrix [][]bool) bool {
-	// check diagonal #2
-	for x := 0; x < MatrixDimension; x++ {
-		if !matchMatrix[MatrixDimension-x-1][x] {
-			return false
-		}
-	}
-	fmt.Println("checkBingoBoardDiagonal2 win")
-	return true
-}
-
 func checkBingoBoardVertical(matchMatrix [][]bool) (win bool) {
 
 	for y := 0; y < MatrixDimension; y++ {
@@ -95,7 +68,6 @@ func checkBingoBoardVertical(matchMatrix [][]bool) (win bool) {
 			}
 		}
 		if win {
-			fmt.Println("checkBingoBoardVertical win")
 			return
 		}
 	}
@@ -113,7 +85,6 @@ func checkBingoBoardHorizontal(matchMatrix [][]bool) (win bool) {
 			}
 		}
 		if win {
-			fmt.Println("checkBingoBoardHorizontal win")
 			return
 		}
 	}
@@ -143,21 +114,42 @@ func computeScore(board [][]int, matchMatrix [][]bool, number int) int {
 	return count * number
 }
 
-func part1() {
-	bingoPicks, bingoBoard, matchMatrix := parseInputFile("day-4-test.txt")
+func solveBingo(fileName string) {
+	bingoPicks, bingoBoard, matchMatrix := parseInputFile(fileName)
+
+	scorePart1 := -1
+	scorePart2 := -1
+	boardsWon := 0
+	boardCompleted := make([]bool, len(bingoBoard))
 
 	for _, pick := range bingoPicks {
+		if scorePart1 != -1 && scorePart2 != -1 {
+			break
+		}
+
 		for i := range bingoBoard {
 			match, y, x := isNumberonBoard(bingoBoard[i], pick)
 			if match {
 				matchMatrix[i][y][x] = true
 			}
 			if checkBingoBoardHorizontal(matchMatrix[i]) || checkBingoBoardVertical(matchMatrix[i]) {
-				fmt.Printf("Pick %v score %v\n", pick, computeScore(bingoBoard[i], matchMatrix[i], pick))
-				return
+				if !boardCompleted[i] {
+					boardsWon++
+					boardCompleted[i] = true
+				}
+
+				if scorePart1 == -1 {
+					scorePart1 = computeScore(bingoBoard[i], matchMatrix[i], pick)
+				}
+
+				if boardsWon >= len(bingoBoard) && scorePart2 == -1 {
+					scorePart2 = computeScore(bingoBoard[i], matchMatrix[i], pick)
+				}
 			}
 		}
 	}
+	fmt.Println("Part1", scorePart1)
+	fmt.Println("Part2", scorePart2)
 }
 
 func main() {
@@ -166,5 +158,5 @@ func main() {
 	if MatrixDimension&1 != 1 {
 		log.Fatalf("Matrix Dimension must be an odd number %v\n", MatrixDimension)
 	}
-	part1()
+	solveBingo("day-4-input.txt")
 }
