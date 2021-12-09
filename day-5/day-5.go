@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// TODO should be dynamic
 const (
 	initX = 1000
 	initY = 1000
@@ -27,24 +28,6 @@ type hydrothermalField struct {
 	points []PointPair
 }
 
-func fixCoord(in PointPair) (out PointPair) {
-	out = in
-
-	if in.X1 > in.X2 {
-		out.X2 = in.X1
-		out.X1 = in.X2
-	}
-
-	if in.Y1 > in.Y2 {
-		out.Y2 = in.Y1
-		out.Y1 = in.Y2
-	}
-
-	out.deltaX = out.X2 - out.X1
-	out.deltaY = out.Y2 - out.Y1
-
-	return
-}
 func inputFile(fileName string) (ventField hydrothermalField) {
 	fileInput, err := ioutil.ReadFile(fileName)
 
@@ -66,10 +49,10 @@ func inputFile(fileName string) (ventField hydrothermalField) {
 		tmpPoint := PointPair{}
 		tmpPoint.X1, tmpPoint.Y1 = parseCoord(inputPair[0])
 		tmpPoint.X2, tmpPoint.Y2 = parseCoord(inputPair[1])
-		tmpPoint = fixCoord(tmpPoint)
+		tmpPoint.deltaX = tmpPoint.X2 - tmpPoint.X1
+		tmpPoint.deltaY = tmpPoint.Y2 - tmpPoint.Y1
 		ventField.points = append(ventField.points, tmpPoint)
 	}
-
 	return ventField
 }
 
@@ -86,30 +69,49 @@ func parseCoord(coord string) (int, int) {
 	return coordInts[0], coordInts[1]
 }
 
-func part1(fileName string) {
+func scanVentField(fileName string, skipDiagonals bool) int {
 	var score int
+
 	ventField := inputFile(fileName)
 
 	for _, point := range ventField.points {
+		dirX := 0
+		dirY := 0
 
 		// skip diagonals
-		if point.deltaX > 0 && point.deltaY > 0 {
+		if point.deltaX != 0 && point.deltaY != 0 && skipDiagonals {
 			continue
 		}
 
-		if point.deltaY == 0 {
-			for x := point.X1; x <= point.X2; x++ {
-				ventField.field[x][point.Y1]++
-			}
+		if point.deltaX > 0 {
+			dirX = 1
 		}
 
-		if point.deltaX == 0 {
-			for y := point.Y1; y <= point.Y2; y++ {
-				ventField.field[point.X1][y]++
+		if point.deltaX < 0 {
+			dirX = -1
+		}
+
+		if point.deltaY > 0 {
+			dirY = 1
+		}
+
+		if point.deltaY < 0 {
+			dirY = -1
+		}
+		x := point.X1
+		y := point.Y1
+
+		for true {
+			ventField.field[x][y]++
+			if x == point.X2 && y == point.Y2 {
+				break
 			}
+			x += dirX
+			y += dirY
 		}
 	}
 
+	// compute score
 	for x := 0; x < initX; x++ {
 		for y := 0; y < initY; y++ {
 			if ventField.field[x][y] > 1 {
@@ -118,41 +120,11 @@ func part1(fileName string) {
 		}
 	}
 
-	fmt.Printf("part1 score %v\n", score)
-
-}
-
-func part2(fileName string) {
-	var score int
-	ventField := inputFile(fileName)
-
-	for _, point := range ventField.points {
-
-		if point.deltaY == 0 {
-			for x := point.X1; x <= point.X2; x++ {
-				ventField.field[x][point.Y1]++
-			}
-		}
-
-		if point.deltaX == 0 {
-			for y := point.Y1; y <= point.Y2; y++ {
-				ventField.field[point.X1][y]++
-			}
-		}
-	}
-
-	for x := 0; x < initX; x++ {
-		for y := 0; y < initY; y++ {
-			if ventField.field[x][y] > 1 {
-				score++
-			}
-		}
-	}
-
-	fmt.Printf("part2 score %v\n", score)
-
+	return score
 }
 
 func main() {
-	part1("day-5-test.txt")
+	fileName := "day-5-input.txt"
+	fmt.Println("part1", scanVentField(fileName, true))
+	fmt.Println("part2", scanVentField(fileName, false))
 }
