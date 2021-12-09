@@ -14,19 +14,22 @@ const (
 )
 
 type PointPair struct {
-	X1 int
-	Y1 int
-	X2 int
-	Y2 int
+	X1     int
+	Y1     int
+	X2     int
+	Y2     int
+	deltaX int
+	deltaY int
 }
 
-func checkCoord(in PointPair) (out PointPair, skip bool, deltaX int, deltaY int) {
+type hydrothermalField struct {
+	field  [][]int
+	points []PointPair
+}
+
+func fixCoord(in PointPair) (out PointPair) {
 	out = in
 
-	if in.X1 != in.X2 && in.Y1 != in.Y2 {
-		skip = true
-		return
-	}
 	if in.X1 > in.X2 {
 		out.X2 = in.X1
 		out.X1 = in.X2
@@ -37,10 +40,37 @@ func checkCoord(in PointPair) (out PointPair, skip bool, deltaX int, deltaY int)
 		out.Y1 = in.Y2
 	}
 
-	deltaX = out.X2 - out.X1
-	deltaY = out.Y2 - out.Y1
+	out.deltaX = out.X2 - out.X1
+	out.deltaY = out.Y2 - out.Y1
 
 	return
+}
+func inputFile(fileName string) (ventField hydrothermalField) {
+	fileInput, err := ioutil.ReadFile(fileName)
+
+	if err != nil {
+		log.Fatalf("error: cannot open file %v\n", fileInput)
+	}
+
+	ventField.field = make([][]int, initY, initY)
+	ventField.points = make([]PointPair, 0, 64)
+
+	for i := range ventField.field {
+		ventField.field[i] = make([]int, initX, initX)
+	}
+
+	inputLines := strings.Split(string(fileInput), "\n")
+
+	for _, input := range inputLines {
+		inputPair := strings.Split(string(input), " -> ")
+		tmpPoint := PointPair{}
+		tmpPoint.X1, tmpPoint.Y1 = parseCoord(inputPair[0])
+		tmpPoint.X2, tmpPoint.Y2 = parseCoord(inputPair[1])
+		tmpPoint = fixCoord(tmpPoint)
+		ventField.points = append(ventField.points, tmpPoint)
+	}
+
+	return ventField
 }
 
 func parseCoord(coord string) (int, int) {
@@ -56,51 +86,73 @@ func parseCoord(coord string) (int, int) {
 	return coordInts[0], coordInts[1]
 }
 
-func main() {
+func part1(fileName string) {
 	var score int
-	fileInput, err := ioutil.ReadFile("day-5-input.txt")
+	ventField := inputFile(fileName)
 
-	if err != nil {
-		log.Fatalf("error: cannot open file %v\n", fileInput)
-	}
+	for _, point := range ventField.points {
 
-	field := make([][]int, initX, initY)
-	for i := range field {
-		field[i] = make([]int, initX, initY)
-	}
-
-	inputLines := strings.Split(string(fileInput), "\n")
-
-	for _, input := range inputLines {
-		inputPair := strings.Split(string(input), " -> ")
-		point := PointPair{}
-		point.X1, point.Y1 = parseCoord(inputPair[0])
-		point.X2, point.Y2 = parseCoord(inputPair[1])
-		point, skip, deltaX, deltaY := checkCoord(point)
-		if skip {
+		// skip diagonals
+		if point.deltaX > 0 && point.deltaY > 0 {
 			continue
 		}
 
-		if deltaY == 0 {
+		if point.deltaY == 0 {
 			for x := point.X1; x <= point.X2; x++ {
-				field[x][point.Y1]++
+				ventField.field[x][point.Y1]++
 			}
 		}
 
-		if deltaX == 0 {
+		if point.deltaX == 0 {
 			for y := point.Y1; y <= point.Y2; y++ {
-				field[point.X1][y]++
+				ventField.field[point.X1][y]++
 			}
 		}
 	}
 
 	for x := 0; x < initX; x++ {
 		for y := 0; y < initY; y++ {
-			if field[x][y] > 1 {
+			if ventField.field[x][y] > 1 {
 				score++
 			}
 		}
 	}
 
 	fmt.Printf("part1 score %v\n", score)
+
+}
+
+func part2(fileName string) {
+	var score int
+	ventField := inputFile(fileName)
+
+	for _, point := range ventField.points {
+
+		if point.deltaY == 0 {
+			for x := point.X1; x <= point.X2; x++ {
+				ventField.field[x][point.Y1]++
+			}
+		}
+
+		if point.deltaX == 0 {
+			for y := point.Y1; y <= point.Y2; y++ {
+				ventField.field[point.X1][y]++
+			}
+		}
+	}
+
+	for x := 0; x < initX; x++ {
+		for y := 0; y < initY; y++ {
+			if ventField.field[x][y] > 1 {
+				score++
+			}
+		}
+	}
+
+	fmt.Printf("part2 score %v\n", score)
+
+}
+
+func main() {
+	part1("day-5-test.txt")
 }
