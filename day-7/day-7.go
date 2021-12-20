@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"sort"
-	"strconv"
-	"strings"
+
+	"github.com/markbrown314/advent-of-code-2021/utils"
 )
 
 func abs(a int) int {
@@ -42,18 +42,13 @@ func lowestIndex(data []int) int {
 }
 
 func main() {
-	pos := make([]int, 0, 10)
 	fileInput, err := ioutil.ReadFile("day-7-input.txt")
 	if err != nil {
 		log.Fatalf("error cannot read file %v\n", err)
 	}
-	inputData := strings.Split(string(fileInput), ",")
-	for i := range inputData {
-		value, err := strconv.Atoi(inputData[i])
-		if err != nil {
-			log.Fatalf("error cannot convert string %v %v\n", value, err)
-		}
-		pos = append(pos, value)
+	pos, err := utils.ConvStrToIntList(string(fileInput), ",")
+	if err != nil {
+		log.Fatalf("error failure during conversion process %v\n", err)
 	}
 
 	sort.Ints(pos)
