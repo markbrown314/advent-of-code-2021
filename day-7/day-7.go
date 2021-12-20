@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("error cannot read file %v\n", err)
 	}
-	pos, err := utils.ConvStrToIntList(string(fileInput), ",")
+	pos, err := utils.ConvStrToIntList(string(fileInput), "[,\n]")
 	if err != nil {
 		log.Fatalf("error failure during conversion process %v\n", err)
 	}
