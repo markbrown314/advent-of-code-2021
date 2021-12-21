@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"strconv"
-	"strings"
+
+	"github.com/markbrown314/advent-of-code-2021/utils"
 )
 
 const (
@@ -21,13 +21,13 @@ func calculateFish(maxDays int) uint64 {
 		log.Fatalf("error: cannot open file %v\n", fileInput)
 	}
 
-	strData := strings.Split(string(fileInput), ",")
-	for _, initTimerStr := range strData {
-		timer, err := strconv.Atoi(initTimerStr)
-		if err != nil {
-			log.Fatalf("error: cannot convert string to int %v\n", err)
-		}
+	timerList, err := utils.ConvStrToIntList(string(fileInput), ",")
 
+	if err != nil {
+		log.Fatalf("error: cannot convert string to int %v\n", err)
+	}
+
+	for _, timer := range timerList {
 		if timer < 0 || timer > MaxTimer {
 			log.Fatalf("error: invalid timer value %v\n", timer)
 		}
@@ -35,7 +35,7 @@ func calculateFish(maxDays int) uint64 {
 		lanternFish[timer]++
 	}
 
-	for true {
+	for {
 		spawn := lanternFish[0]
 		for i := 1; i <= MaxTimer; i++ {
 			lanternFish[i-1] = lanternFish[i]
