@@ -58,5 +58,5 @@ func calculateFish(maxDays int) uint64 {
 
 func main() {
 	fmt.Println("part1", calculateFish(80))
-	fmt.Println("part1", calculateFish(256))
+	fmt.Println("part2", calculateFish(256))
 }
