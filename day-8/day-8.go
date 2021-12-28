@@ -23,13 +23,14 @@ func init() {
 }
 
 func main() {
-	//uniqueNumberCount := 0
+	var digitCount uint32 = 0
+	var totalOutput uint32 = 0
 	var segmentMap map[uint8]uint8
 	var signalMap map[uint8]uint8
 	var reverseSignalMap map[uint8]uint8
 	var crossMap map[rune]uint8
 
-	fileInput, err := ioutil.ReadFile("day-8-test.txt")
+	fileInput, err := ioutil.ReadFile("day-8-input.txt")
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
@@ -42,6 +43,10 @@ func main() {
 	inputStr := re.Split(string(fileInput), -1)
 
 	for i := range inputStr {
+		// check for end of input
+		if inputStr[i] == "" {
+			break
+		}
 		log.Printf("%v %v\n", i, inputStr[i])
 		if i%2 == 0 {
 			// clear maps
@@ -56,7 +61,7 @@ func main() {
 				for _, signal := range signalPattern {
 					bitMap |= 1 << wireMap[signal]
 				}
-				signalMap[bitMap] = 0
+				signalMap[bitMap] = 0xf
 				switch len(signalPattern) {
 				case 2:
 					signalMap[bitMap] = 1
@@ -74,21 +79,36 @@ func main() {
 			}
 		} else {
 			// process output
+			var output uint32 = 0
 			for _, signalPattern := range strings.Fields(inputStr[i]) {
 				bitMap := uint8(0)
 				for _, signal := range signalPattern {
 					bitMap |= 1 << wireMap[signal]
 				}
-				log.Printf("output %08b = %v\n", bitMap, signalMap[bitMap])
+				output = (output * 10) + uint32(segmentMap[bitMap])
+				switch segmentMap[bitMap] {
+				case 1:
+					fallthrough
+				case 4:
+					fallthrough
+				case 7:
+					fallthrough
+				case 8:
+					digitCount++
+				}
+
+				log.Printf("** output %08b = %v\n", bitMap, segmentMap[bitMap])
 			}
-			break
+			log.Printf("** output %v\n", output)
+			totalOutput += output
+			//break
 		}
 		// dump keys
 		for key, value := range signalMap {
 			log.Printf("sig %08b: %v\n", key, value)
 		}
 		// find segment 'a'
-		crossMap['a'] = reverseSignalMap[7] - reverseSignalMap[1]
+		crossMap['a'] = reverseSignalMap[7] ^ reverseSignalMap[1]
 		log.Printf("crossMap['a'] = %08b\n", crossMap['a'])
 
 		// find segment 'c'
@@ -147,18 +167,20 @@ func main() {
 		log.Printf("crossMap['b'] = %08b\n", crossMap['b'])
 
 		// fill in segment map
-		segmentMap[0] = crossMap['a'] | crossMap['b'] | crossMap['c'] | crossMap['e'] | crossMap['f'] | crossMap['g']
-		segmentMap[1] = crossMap['c'] | crossMap['f']
-		segmentMap[2] = crossMap['a'] | crossMap['c'] | crossMap['d'] | crossMap['e'] | crossMap['g']
-		segmentMap[3] = crossMap['a'] | crossMap['c'] | crossMap['d'] | crossMap['f'] | crossMap['g']
-		segmentMap[4] = crossMap['b'] | crossMap['c'] | crossMap['d'] | crossMap['f']
-		segmentMap[5] = crossMap['a'] | crossMap['b'] | crossMap['d'] | crossMap['f'] | crossMap['g']
-		segmentMap[6] = crossMap['a'] | crossMap['b'] | crossMap['d'] | crossMap['e'] | crossMap['f'] | crossMap['g']
-		segmentMap[7] = crossMap['a'] | crossMap['c'] | crossMap['f']
-		segmentMap[8] = crossMap['a'] | crossMap['b'] | crossMap['c'] | crossMap['d'] | crossMap['e'] | crossMap['f'] | crossMap['g']
+		segmentMap[crossMap['a']|crossMap['b']|crossMap['c']|crossMap['e']|crossMap['f']|crossMap['g']] = 0
+		segmentMap[crossMap['c']|crossMap['f']] = 1
+		segmentMap[crossMap['a']|crossMap['c']|crossMap['d']|crossMap['e']|crossMap['g']] = 2
+		segmentMap[crossMap['a']|crossMap['c']|crossMap['d']|crossMap['f']|crossMap['g']] = 3
+		segmentMap[crossMap['b']|crossMap['c']|crossMap['d']|crossMap['f']] = 4
+		segmentMap[crossMap['a']|crossMap['b']|crossMap['d']|crossMap['f']|crossMap['g']] = 5
+		segmentMap[crossMap['a']|crossMap['b']|crossMap['d']|crossMap['e']|crossMap['f']|crossMap['g']] = 6
+		segmentMap[crossMap['a']|crossMap['c']|crossMap['f']] = 7
+		segmentMap[crossMap['a']|crossMap['b']|crossMap['c']|crossMap['d']|crossMap['e']|crossMap['f']|crossMap['g']] = 8
+		segmentMap[crossMap['a']|crossMap['b']|crossMap['c']|crossMap['d']|crossMap['f']|crossMap['g']] = 9
 
 		for key, value := range segmentMap {
-			log.Printf("seg %08b: %v\n", value, key)
+			log.Printf("seg %v: %08b\n", value, key)
 		}
 	}
+	log.Printf("total output %v [1|4|7|8] count %v\n", totalOutput, digitCount)
 }
