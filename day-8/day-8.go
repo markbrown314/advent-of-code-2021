@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/bits"
@@ -11,11 +12,12 @@ import (
 const UnknownDigit = 0xf
 
 // map segment (wire line) to bit position
+
 var wireMap map[rune]uint8
 
 func init() {
-
 	wireMap = make(map[rune]uint8)
+
 	wireMap['a'] = 1
 	wireMap['b'] = 2
 	wireMap['c'] = 3
@@ -23,6 +25,21 @@ func init() {
 	wireMap['e'] = 5
 	wireMap['f'] = 6
 	wireMap['g'] = 7
+
+	/*  unscrambled segment positions
+
+	bit:     7654321
+	segment: gfedcba
+
+	           aaaa
+	          b    c
+	          b    c
+	           dddd
+	          e    f
+	          e    f
+	           gggg
+	*/
+
 }
 
 func main() {
@@ -54,7 +71,7 @@ func main() {
 		if inputStr[i] == "" {
 			break
 		}
-		log.Printf("%v %v\n", i, inputStr[i])
+		fmt.Printf("%v %v\n", i, inputStr[i])
 		if i%2 == 0 {
 			// clear maps
 			signalMap = make(map[uint8]uint8)
@@ -86,12 +103,12 @@ func main() {
 			// dump known digits [1|4|7|8]
 			for key, value := range signalMap {
 				if value != UnknownDigit {
-					log.Printf("sig %08b: %v\n", key, value)
+					fmt.Printf("sig %08b: %v\n", key, value)
 				}
 			}
 			// find segment 'a'
 			segmentMap['a'] = reverseSignalMap[7] ^ reverseSignalMap[1]
-			log.Printf("segmentMap['a'] = %08b\n", segmentMap['a'])
+			fmt.Printf("segmentMap['a'] = %08b\n", segmentMap['a'])
 
 			// find segment 'c' and signal 6
 			for key := range signalMap {
@@ -101,17 +118,17 @@ func main() {
 					if value != 0 {
 						// found 6
 						segmentMap['c'] = value
-						log.Printf("segmentMap['c'] = %08b\n", segmentMap['c'])
+						fmt.Printf("segmentMap['c'] = %08b\n", segmentMap['c'])
 						signalMap[key] = 6
 						reverseSignalMap[6] = key
-						log.Printf("sig %08b: 6\n", signalMap[6])
+						fmt.Printf("sig %08b: 6\n", key)
 					}
 				}
 			}
 
 			// find segment 'f'
 			segmentMap['f'] = reverseSignalMap[1] ^ segmentMap['c']
-			log.Printf("segmentMap['f'] = %08b\n", segmentMap['f'])
+			fmt.Printf("segmentMap['f'] = %08b\n", segmentMap['f'])
 
 			// find segment 'g' and signal 9
 			for key := range signalMap {
@@ -122,17 +139,17 @@ func main() {
 
 					if bits.OnesCount8(value) == 1 {
 						segmentMap['g'] = value
-						log.Printf("segmentMap['g'] = %08b\n", segmentMap['g'])
+						fmt.Printf("segmentMap['g'] = %08b\n", segmentMap['g'])
 						signalMap[key] = 9
 						reverseSignalMap[9] = key
-						log.Printf("sig %08b: 9\n", signalMap[9])
+						fmt.Printf("sig %08b: 9\n", key)
 					}
 				}
 			}
 
 			// find segment 'e'
 			segmentMap['e'] = reverseSignalMap[8] ^ reverseSignalMap[9]
-			log.Printf("segmentMap['e'] = %08b\n", segmentMap['e'])
+			fmt.Printf("segmentMap['e'] = %08b\n", segmentMap['e'])
 
 			// find segment 'd' and signal 0
 			for key := range signalMap {
@@ -142,52 +159,60 @@ func main() {
 						// found 0
 						reverseSignalMap[0] = key
 						signalMap[key] = 0
-						log.Printf("sig %08b: 0\n", signalMap[0])
+						fmt.Printf("sig %08b: 0\n", key)
 						segmentMap['d'] = reverseSignalMap[8] ^ reverseSignalMap[0]
-						log.Printf("segmentMap['d'] = %08b\n", segmentMap['d'])
+						fmt.Printf("segmentMap['d'] = %08b\n", segmentMap['d'])
 					}
 				}
 			}
 
 			// find segement 'b'
 			segmentMap['b'] = segmentMap['d'] ^ reverseSignalMap[4] ^ reverseSignalMap[1]
-			log.Printf("segmentMap['b'] = %08b\n", segmentMap['b'])
+			fmt.Printf("segmentMap['b'] = %08b\n", segmentMap['b'])
 
-			// fill in rest of signal map
+			// fill in rest of signal map (not setting reverse since they are not used)
+
+			//signal 2
 			signalMap[segmentMap['a']|segmentMap['c']|segmentMap['d']|segmentMap['e']|segmentMap['g']] = 2
-			log.Printf("sig %08b: 2\n", signalMap[2])
+			fmt.Printf("sig %08b: 2\n", segmentMap['a']|segmentMap['c']|segmentMap['d']|segmentMap['e']|segmentMap['g'])
+			// signal 3
 			signalMap[segmentMap['a']|segmentMap['c']|segmentMap['d']|segmentMap['f']|segmentMap['g']] = 3
-			log.Printf("sig %08b: 3\n", signalMap[3])
+			fmt.Printf("sig %08b: 3\n", segmentMap['a']|segmentMap['c']|segmentMap['d']|segmentMap['f']|segmentMap['g'])
+			// signal 4
 			signalMap[segmentMap['a']|segmentMap['b']|segmentMap['d']|segmentMap['f']|segmentMap['g']] = 5
-			log.Printf("sig %08b: 5\n", signalMap[5])
+			fmt.Printf("sig %08b: 5\n", segmentMap['a']|segmentMap['b']|segmentMap['d']|segmentMap['f']|segmentMap['g'])
 
 		} else {
 			// process output
 			var output uint32 = 0
+
 			for _, signalPattern := range strings.Fields(inputStr[i]) {
 				bitMap := uint8(0)
 				for _, signal := range signalPattern {
 					bitMap |= 1 << wireMap[signal]
 				}
-				output = (output * 10) + uint32(signalMap[bitMap])
-				// part 1 count outputs [1|4|7|8]
-				switch signalMap[bitMap] {
-				case 1:
-					fallthrough
-				case 4:
-					fallthrough
-				case 7:
-					fallthrough
-				case 8:
-					digitCount++
+				if value, ok := signalMap[bitMap]; ok {
+					output = (output * 10) + uint32(value)
+					// part 1 count outputs [1|4|7|8]
+					switch signalMap[bitMap] {
+					case 1:
+						fallthrough
+					case 4:
+						fallthrough
+					case 7:
+						fallthrough
+					case 8:
+						digitCount++
+					}
+					fmt.Printf("** output digit \"%7s\" %08b = %v\n", signalPattern, bitMap, value)
+				} else {
+					log.Fatalf("error interpreting signal output %v\n", signalPattern)
 				}
-
-				log.Printf("** output digit \"%7s\" %08b = %v\n", signalPattern, bitMap, signalMap[bitMap])
 			}
-			log.Printf("*** output value %v\n", output)
+			fmt.Printf("*** output value %v\n", output)
 			totalOutput += output
 		}
 	}
-	log.Printf("part 1: [1|4|7|8] count %v\n", digitCount)
-	log.Printf("part 2: total output %v\n", totalOutput)
+	fmt.Printf("part 1: [1|4|7|8] count %v\n", digitCount)
+	fmt.Printf("part 2: total output %v\n", totalOutput)
 }
