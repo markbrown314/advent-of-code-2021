@@ -37,7 +37,9 @@ func main() {
 	}
 	inputLines := strings.Split(string(fileInput), "\n")
 	for _, line := range inputLines {
+		// count of each character
 		chunk := make(map[rune]int)
+		// stack of last characters
 		last := make([]rune, 0)
 		illegal := false
 		for _, chr := range line {
@@ -73,7 +75,7 @@ func main() {
 			default:
 				log.Fatalf("invalid character found %c\n", chr)
 			}
-
+			// part 1 scoring
 			if illegal {
 				fmt.Printf("\n")
 				fmt.Printf("** invalid %c found", chr)
@@ -92,6 +94,7 @@ func main() {
 		}
 		fmt.Printf("\n")
 		var autoScore int
+		// part 2 autocomplete scoring
 		if len(last) != 0 && !illegal {
 			fmt.Printf("** incomplete line %s\n", string(last))
 			reverse := make([]rune, 0)
@@ -117,6 +120,7 @@ func main() {
 		}
 	}
 	sort.Ints(autoScores)
+	// find middle score
 	finalAutoScore := autoScores[len(autoScores)/2]
 	fmt.Printf("part 1: final score is %v\n", score)
 	fmt.Printf("part 2: final score is %v\n", finalAutoScore)
