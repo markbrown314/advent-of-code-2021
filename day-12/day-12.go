@@ -6,8 +6,16 @@ import (
 	"log"
 	"strings"
 
-	"github.com/markbrown314/advent-of-code-2021/utils"
+	"github.com/markbrown314/advent-of-code-2021/graph"
 )
+
+/*
+    start
+    /   \
+c--A-----b--d
+    \   /
+     end
+*/
 
 func main() {
 	fmt.Println("Problem Day #12")
@@ -16,14 +24,14 @@ func main() {
 		log.Fatalf("error: failed to read file %v\n", err)
 	}
 
-	g := utils.CreateDirGraph()
+	g := graph.New()
 
 	for _, line := range strings.Split(string(fileInput), "\n") {
 		if line == "" {
 			continue
 		}
 		node := strings.Split(line, "-")
-		utils.AddEdgeToGraph(g, node[0], node[1])
+		graph.AddEdgeToGraph(g, node[0], node[1], true)
 	}
 	fmt.Println(g.Vertices)
 }
