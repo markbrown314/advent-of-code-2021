@@ -22,7 +22,7 @@ func (g *Graph) insertVertex(id string) Vertex {
 	return v
 }
 
-func linkVertices(vA Vertex, vB Vertex, directed bool) {
+func linkVertices(vA *Vertex, vB *Vertex, directed bool) {
 	vA.Edges[vB.Id] = true
 	if !directed {
 		vB.Edges[vA.Id] = true
@@ -32,5 +32,5 @@ func linkVertices(vA Vertex, vB Vertex, directed bool) {
 func (g *Graph) AddEdge(idA string, idB string, directed bool) {
 	vA := g.insertVertex(idA)
 	vB := g.insertVertex(idB)
-	linkVertices(vA, vB, directed)
+	linkVertices(&vA, &vB, directed)
 }
