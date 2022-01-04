@@ -13,7 +13,7 @@ func New() Graph {
 	return Graph{Vertices: make(map[string]Vertex)}
 }
 
-func insertVertexToGraph(g Graph, id string) Vertex {
+func (g *Graph) insertVertex(id string) Vertex {
 	v, valid := g.Vertices[id]
 	if !valid {
 		v = Vertex{Id: id, Edges: make(map[string]bool)}
@@ -29,8 +29,8 @@ func linkVertices(vA Vertex, vB Vertex, directed bool) {
 	}
 }
 
-func AddEdgeToGraph(g Graph, idA string, idB string, directed bool) {
-	vA := insertVertexToGraph(g, idA)
-	vB := insertVertexToGraph(g, idB)
+func (g *Graph) AddEdge(idA string, idB string, directed bool) {
+	vA := g.insertVertex(idA)
+	vB := g.insertVertex(idB)
 	linkVertices(vA, vB, directed)
 }

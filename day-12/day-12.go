@@ -64,7 +64,7 @@ func main() {
 			continue
 		}
 		node := strings.Split(line, "-")
-		graph.AddEdgeToGraph(g, node[0], node[1], false)
+		g.AddEdge(node[0], node[1], false)
 	}
 	fmt.Printf("part 1: traverseCount %v\n", traverseCave(g, "start", nil, 1))
 	fmt.Printf("part 2: traverseCount %v\n", traverseCave(g, "start", nil, 2))
