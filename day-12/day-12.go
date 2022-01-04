@@ -20,24 +20,10 @@ func traverseCave(g graph.Graph, id string, visited []string, maxVisit int) int 
 		}
 	}
 
-	//fmt.Printf("enter %v visited %v\n", id, visited)
-
 	// mark as visted
 	visited = append(visited, id)
 
 	if id == "end" {
-		//fmt.Printf("** %v\n", visited)
-		for _, v := range visited {
-			if v == "start" {
-				fmt.Printf("start,")
-				continue
-			}
-			if v == "end" {
-				fmt.Printf("end\n")
-				continue
-			}
-			fmt.Printf("%v,", v)
-		}
 		return 1
 	}
 
@@ -45,7 +31,6 @@ func traverseCave(g graph.Graph, id string, visited []string, maxVisit int) int 
 	visitMap := make(map[string]int)
 	for _, v := range visited {
 		if unicode.IsLower(rune(v[0])) {
-			//fmt.Printf("marked %v\n", v)
 			visitMap[v] += 1
 		} else {
 			visitMap[v] = 0
@@ -56,10 +41,8 @@ func traverseCave(g graph.Graph, id string, visited []string, maxVisit int) int 
 	}
 
 	for v := range g.Vertices[id].Edges {
-		//fmt.Printf("candidate %v->%v\n", id, v)
 		visitCount := visitMap[v]
 		if visitCount < maxVisit {
-			//fmt.Printf("accepted %v\n", v)
 			traverseCount += traverseCave(g, v, visited, maxVisit)
 			visitMap[v] += 1
 		}
@@ -83,7 +66,6 @@ func main() {
 		node := strings.Split(line, "-")
 		graph.AddEdgeToGraph(g, node[0], node[1], false)
 	}
-	fmt.Println(g.Vertices)
-	//fmt.Printf("part 1: traverseCount %v\n", traverseCave(g, "start", nil, 1))
+	fmt.Printf("part 1: traverseCount %v\n", traverseCave(g, "start", nil, 1))
 	fmt.Printf("part 2: traverseCount %v\n", traverseCave(g, "start", nil, 2))
 }
