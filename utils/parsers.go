@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,4 +22,12 @@ func ConvStrToIntList(numList string, regex string) ([]int, error) {
 		numArray = append(numArray, numInt)
 	}
 	return numArray, nil
+}
+
+func StringToInt(str string) int {
+	value, err := strconv.Atoi(str)
+	if err != nil {
+		log.Fatalf("error could not convert %v to int (%v)", str, err)
+	}
+	return value
 }

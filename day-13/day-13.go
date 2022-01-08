@@ -5,8 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"regexp"
-	"strconv"
 	"strings"
+
+	"github.com/markbrown314/advent-of-code-2021/utils"
 )
 
 type Coord struct {
@@ -14,45 +15,35 @@ type Coord struct {
 	Y int
 }
 
-func stringToInt(str string) int {
-	value, err := strconv.Atoi(str)
-	if err != nil {
-		log.Fatalf("error could not convert %v to int (%v)", str, err)
-	}
-	return value
-}
-
+// fold coordinate along pivot point
 func foldAlong(c int, pivot int) int {
 	a := c - pivot
 	return pivot - a
 }
 
-func foldDotMap(coordMap map[Coord]bool, pivot int, along_x bool) {
-	for coord := range coordMap {
+func foldDotMap(dotMap map[Coord]bool, pivot int, alongX bool) {
+	for coord := range dotMap {
+		var new_coord Coord
 
 		c := coord.Y
-		if along_x {
+		if alongX {
 			c = coord.X
 		}
-
-		//fmt.Printf("coord %v x?%v %v\n", coord, along_x, pivot)
 
 		if c <= pivot {
 			continue
 		}
 
 		c = foldAlong(c, pivot)
-		var new_coord Coord
 
-		if along_x {
+		if alongX {
 			new_coord = Coord{X: c, Y: coord.Y}
 		} else {
 			new_coord = Coord{X: coord.X, Y: c}
 		}
 
-		//fmt.Printf("moved here %v\n", new_coord)
-		delete(coordMap, coord)
-		coordMap[new_coord] = true
+		delete(dotMap, coord)
+		dotMap[new_coord] = true
 	}
 }
 
@@ -71,6 +62,8 @@ func printDots(dotMap map[Coord]bool, maxX int, maxY int) {
 
 func main() {
 	fmt.Println("Problem Day #13")
+
+	// parse input file
 	fileInput, err := ioutil.ReadFile("day-13-input.txt")
 	foldCount := 0
 	maxX := -1
@@ -79,16 +72,17 @@ func main() {
 		log.Fatalf("Error loading data file %v\n", err)
 	}
 
-	coord_re := regexp.MustCompile("^[0-9]*,[0-9]*$")
-	fold_re := regexp.MustCompile("^fold along [x|y]=")
-	fold_along_x_re := regexp.MustCompile("^fold along x=")
+	coordRe := regexp.MustCompile("^[0-9]*,[0-9]*$")
+	foldRe := regexp.MustCompile("^fold along [x|y]=")
+	foldAlongXRe := regexp.MustCompile("^fold along x=")
 
 	dotMap := make(map[Coord]bool)
 	for _, line := range strings.Split(string(fileInput), "\n") {
-		if coord_re.MatchString(line) {
+		// save location in dot map
+		if coordRe.MatchString(line) {
 			c := strings.Split(line, ",")
-			x := stringToInt(c[0])
-			y := stringToInt(c[1])
+			x := utils.StringToInt(c[0])
+			y := utils.StringToInt(c[1])
 			if x > maxX {
 				maxX = x
 			}
@@ -99,13 +93,16 @@ func main() {
 			continue
 		}
 
-		if fold_re.MatchString(line) {
+		// fold along x or y axis
+		if foldRe.MatchString(line) {
 			pivot := strings.Split(line, "=")
-			along_x := fold_along_x_re.MatchString(line)
-			//fmt.Printf("Fold here x?%v pivot %v\n", along_x, pivot[1])
-			foldDotMap(dotMap, stringToInt(pivot[1]), along_x)
+			alongX := foldAlongXRe.MatchString(line)
+
+			foldDotMap(dotMap, utils.StringToInt(pivot[1]), alongX)
 			foldCount++
-			if along_x {
+
+			// re adjust max
+			if alongX {
 				maxX /= 2
 			} else {
 				maxY /= 2
@@ -116,5 +113,7 @@ func main() {
 			fmt.Printf("part 1: visible coordinates after fold %v\n", len(dotMap))
 		}
 	}
+
+	fmt.Println("part 2: text output:")
 	printDots(dotMap, maxX, maxY)
 }
